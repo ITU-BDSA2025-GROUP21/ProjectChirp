@@ -8,16 +8,16 @@
 <div>
     <h2> Public Timeline </h2>
     
-    @* @if (User.Identity != null && User.Identity.IsAuthenticated) *@
-    
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
         <div class="cheepbox">
-            <h3>What's on your mind?</h3> @* @(User.Identity.Name) *@
-            <form method="post" asp-controller="Public" asp-action="Index">
+            <h3>What's on your mind @Model.CurrentAuthorName ?</h3>
+            <form method="post">
                 <input style="float: left" type="text" asp-for="Text" />
                 <input type="submit" value="Share" />
             </form>
         </div>
-    
+    }
     @if (Model.Cheeps.Any())
     {
         <ul id="messagelist" class="cheeps">

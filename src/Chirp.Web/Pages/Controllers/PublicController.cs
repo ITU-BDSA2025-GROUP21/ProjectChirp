@@ -1,52 +1,75 @@
 ﻿using Chirp.Core.DTO;
 using Chirp.Core.Services;
+using Chirp.Infrastructure.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Chirp.Web.Pages.Controllers;
-
-public class PublicController : PageModel
+namespace Chirp.Web.Pages.Controllers
 {
-    [BindProperty]
-    public string? Text { get; set; }
-    
-    private readonly ICheepService _service;
-    public IEnumerable<CheepDTO> Cheeps { get; set; } = new List<CheepDTO>();
-    public int CurrentPage { get; set; } //Tracker til pagination
-
-    public PublicController(ICheepService service)
+    public class PublicController : PageModel
     {
-        _service = service;
-    }
+        [BindProperty]
+        public string? Text { get; set; }
+        
+        private readonly ICheepService _service;
+        private readonly UserManager<Author> _userManager;
 
-    public ActionResult OnGet([FromQuery] int page = 1) //Pagination via query string
-    {
-        if (page < 1) page = 1; //Sikrer at page ikke er mindre end 1
+        public IEnumerable<CheepDTO> Cheeps { get; set; } = new List<CheepDTO>();
+        public int CurrentPage { get; set; }
+        
+        public string? CurrentAuthorName { get; set; }
 
-        CurrentPage = page;
-        Cheeps = _service.GetCheeps(page);
-        return Page();
-    }
-    
-    public IActionResult OnPost([FromQuery] int page = 1)
-    {
-        if (page < 1) page = 1;
-
-        // Only create cheep if something was typed
-        if (!string.IsNullOrWhiteSpace(Text))
+        public PublicController(ICheepService service, UserManager<Author> userManager)
         {
-            // Adjust to your service API – guessing something like this:
-            _service.MakeCheep(new CheepDTO
-            {
-                Author = User.Identity.Name,
-                Message = Text,
-                CreatedDate =  DateTime.Now.ToString()
-            });
+            _service = service;
+            _userManager = userManager;
         }
 
-        CurrentPage = page;
-        Cheeps = _service.GetCheeps(page);
+        public async Task<IActionResult> OnGetAsync([FromQuery] int page = 1)
+        {
+            if (page < 1) page = 1;
 
-        return Page();
+            CurrentPage = page;
+            Cheeps = _service.GetCheeps(page);
+
+            var user = await _userManager.GetUserAsync(User);
+            CurrentAuthorName = user?.Name; 
+
+            return Page();
+        }
+        
+        public async Task<IActionResult> OnPostAsync([FromQuery] int page = 1)
+        {
+            if (page < 1) page = 1;
+
+            if (!string.IsNullOrWhiteSpace(Text))
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user != null)
+                {
+                    CurrentAuthorName = user.Name;
+
+                    _service.MakeCheep(new CheepDTO
+                    {
+                        Author = user.Name,
+                        Message = Text,
+                        CreatedDate = DateTime.Now.ToString()
+                    });
+                }
+            }
+            else
+            {
+                // Even if nothing is posted, still set the name for the view
+                var user = await _userManager.GetUserAsync(User);
+                CurrentAuthorName = user?.Name;
+            }
+
+            CurrentPage = page;
+            Cheeps = _service.GetCheeps(page);
+
+            return Page();
+        }
     }
 }

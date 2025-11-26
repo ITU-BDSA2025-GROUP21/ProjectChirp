@@ -1,3 +1,4 @@
+ using System.Security.Claims;
  using Chirp.Core.Repositories;
 using Chirp.Core.Services;
 using Chirp.Infrastructure.Data;
@@ -27,8 +28,10 @@ builder.Services.AddAuthentication().AddGitHub(options =>
     options.ClientId = builder.Configuration["Authentication:GitHub:ClientId"]!;
     options.ClientSecret = builder.Configuration["Authentication:GitHub:ClientSecret"]!;
     options.Scope.Add("user:email");
-
-    options.ClaimActions.MapJsonKey("urn:github:name", "name");
+    
+    options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+    options.SaveTokens = true;
 });
 
 var app = builder.Build();
