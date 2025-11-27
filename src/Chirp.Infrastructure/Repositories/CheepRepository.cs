@@ -21,6 +21,7 @@ namespace Chirp.Razor.Repositories
             int offset = (page - 1) * pageSize;
             return _context.Cheeps
                 .AsNoTracking()
+                .Include(c => c.Author)
                 .OrderBy(c => c.TimeStamp)
                 .Skip(offset)
                 .Take(pageSize)
@@ -31,13 +32,21 @@ namespace Chirp.Razor.Repositories
         public IEnumerable<CheepDTO> GetByAuthor(string authorName, int page = 1, int pageSize = 32)
         {
             int offset = (page - 1) * pageSize;
+            authorName = authorName.Trim().ToLower();
+            
             return _context.Cheeps
                 .AsNoTracking()
-                .Where(c => c.Author.Name == authorName)
-                .OrderBy(c => c.TimeStamp)
+                .Include(c => c.Author)
+                .Where(c => c.Author.Name.ToLower() == authorName)
+                .OrderByDescending(c => c.TimeStamp)
                 .Skip(offset)
                 .Take(pageSize)
-                .Select(createCheepDTO)
+                .Select(c => new CheepDTO
+                {
+                    Author = c.Author.Name,
+                    Message = c.Text,
+                    CreatedDate = c.TimeStamp.ToString("dd/MM/yyyy HH:mm")
+                })
                 .ToList();
         }
 

@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@using Chirp.Infrastructure.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<Author> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <title>@ViewData["Title"]</title>
@@ -10,10 +14,12 @@
     <h1><img src="/images/icon1.png" alt="Icon1"/>Chirp!</h1>
         <div class=navigation>
             @if (User.Identity != null && User.Identity.IsAuthenticated)
-            {
+            { 
+                var author = await UserManager.GetUserAsync(User);
+                
                 <div>
-                    <a href="/@(User.Identity.Name)">my timeline</a> |
-                    <a href="/">public timeline</a> |
+                    <a href="/@(author.Name)">my timeline</a> |
+                                       <a href="/">public timeline</a> |
                     <a id="logout" asp-area="Identity" asp-page="/Account/Logout">logout [@(User.Identity.Name)]</a>
                 </div>
             }

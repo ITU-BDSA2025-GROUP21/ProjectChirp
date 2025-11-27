@@ -15,13 +15,13 @@
             @foreach (var cheep in Model.Cheeps)
             {
                 <li>
-                    <p>
+                    <pw>
                         <strong>
                             <a href="/@cheep.Author">@cheep.Author</a>
                         </strong>
                         @cheep.Message
                         <small>&mdash; @cheep.CreatedDate</small>
-                    </p>
+                    </pw>
                 </li>
             }
         </ul>

@@ -57,7 +57,7 @@ namespace Chirp.Web.Pages.Controllers
                         Message = Text,
                         CreatedDate = DateTime.Now.ToString()
                     });
-                }
+                } 
             }
             else
             {
